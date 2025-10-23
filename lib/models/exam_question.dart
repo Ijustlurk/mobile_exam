@@ -5,7 +5,7 @@ class ExamQuestion {
   final QuestionType type;
   final String question;
   final List<String>? options;
-  final String? answer; // ✅ Correctly added
+  final String? answer;
   final String? studentAnswer;
 
   ExamQuestion({
@@ -33,7 +33,7 @@ class ExamQuestion {
 
   Map<String, dynamic> toJson() => {
     'id': id,
-    'type': type.name, // ✅ Converts enum to string
+    'type': type.name,
     'question': question,
     'options': options,
     'answer': answer,
