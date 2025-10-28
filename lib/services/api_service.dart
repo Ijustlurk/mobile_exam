@@ -889,7 +889,9 @@ class ApiService {
       if (answer != null && answer.toString().isNotEmpty) {
         formattedAnswers.add({
           'item_id': itemId,
-          'answer': answer.toString(),
+          'answer': question['type'] == 'true_false' && answer is bool
+              ? (answer ? 'True' : 'False')
+              : answer.toString(),
         });
       }
     }

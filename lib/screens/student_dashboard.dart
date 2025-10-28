@@ -236,6 +236,14 @@ class _StudentDashboardState extends State<StudentDashboard>
   }
 
   @override
+  void didUpdateWidget(covariant StudentDashboard oldWidget) {
+        super.didUpdateWidget(oldWidget);
+        if (widget.studentName != oldWidget.studentName) {
+            setState(() {});
+        }
+    }
+
+  @override
   Widget build(BuildContext context) {
     debugPrint('\n🔍 BUILDING DASHBOARD - Reading from Hive cache...');
     debugPrint('   Student ID: ${widget.studentId}');

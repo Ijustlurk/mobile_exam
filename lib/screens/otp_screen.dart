@@ -170,7 +170,7 @@ class _OTPScreenState extends State<OTPScreen>
       );
     }
 
-    if (mounted && isVerifying) {
+    if (mounted) {
       setState(() => isVerifying = false);
     }
   }

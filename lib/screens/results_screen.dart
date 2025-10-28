@@ -3,7 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'student_dashboard.dart';
 import 'package:confetti/confetti.dart';
-import 'dart:math';
+import '../services/api_service.dart';
 
 // 🧭 Navigation Helper with Fade Transition
 void navigateToDashboard(BuildContext context, String studentId) {
@@ -88,6 +88,8 @@ class _ResultsScreenState extends State<ResultsScreen>
       if (!mounted) return;
       setState(() => showFAB = _scrollController.offset > 300);
     });
+
+    _loadExamResultsFromAPI();
   }
 
   @override
@@ -209,6 +211,20 @@ class _ResultsScreenState extends State<ResultsScreen>
       );
     }
 
+    debugPrint('Questions: ${questions.length}');
+    debugPrint('Student Answers: ${studentAnswers.length}');
+
+    if (questions.isEmpty) {
+      return Scaffold(
+        body: Center(
+          child: Text(
+            'No results available.',
+            style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+          ),
+        ),
+      );
+    }
+
     final filteredQuestions = getFilteredQuestions();
     final correctCount = getCorrectCount();
     final incorrectCount = getIncorrectCount();
@@ -326,6 +342,24 @@ class _ResultsScreenState extends State<ResultsScreen>
         ),
       ),
     );
+  }
+
+  Future<void> _loadExamResultsFromAPI() async {
+    try {
+      final results = await ApiService.fetchExamResults(attemptId: int.parse(widget.examId));
+      if (results != null) {
+        setState(() {
+          studentAnswers = results['answers'] ?? {};
+          questions = results['questions'] ?? [];
+        });
+      } else {
+        debugPrint('⚠️ No results found for exam ID: ${widget.examId}');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error loading exam results: $e');
+    } finally {
+      setState(() => loaded = true);
+    }
   }
 }
 
