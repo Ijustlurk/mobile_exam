@@ -592,17 +592,25 @@ void _showWarningDialog(String message) {
       debugPrint('🔍 Checking for attempt data...');
       if (result['attempt'] != null) {
         debugPrint('   ✓ Found attempt object');
+        debugPrint('   Raw attempt data: ${result['attempt']}');
+        
         attemptId = result['attempt']['attempt_id'];
         final startTimeStr = result['attempt']['start_time'];
         attemptStartTime = DateTime.parse(startTimeStr);
         
         debugPrint('✅ Attempt started:');
-        debugPrint('   Attempt ID: $attemptId');
+        debugPrint('   Attempt ID: $attemptId (type: ${attemptId.runtimeType})');
+        debugPrint('   Exam ID: ${widget.examId}');
+        debugPrint('   Student ID: ${widget.studentId}');
         debugPrint('   Start time: $attemptStartTime');
         debugPrint('   Message: ${result['message']}');
         
         // Save attempt info
+        debugPrint('💾 Saving to Hive with:');
+        debugPrint('   Key 1: $attemptId');
+        debugPrint('   Key 2: ${widget.examId}_${widget.studentId}');
         saveLocalData();
+        debugPrint('✅ Saved to Hive cache');
       } else {
         debugPrint('❌ No attempt object in response');
         debugPrint('   Response keys: ${result.keys.toList()}');
@@ -755,8 +763,15 @@ void _showWarningDialog(String message) {
       return;
     }
     
+    debugPrint('💾 saveLocalData() called:');
+    debugPrint('   attemptId: $attemptId (type: ${attemptId.runtimeType})');
+    debugPrint('   examId: ${widget.examId}');
+    debugPrint('   studentId: ${widget.studentId}');
+    
     examBox.put(attemptId, {
       'attemptId': attemptId,
+      'examId': widget.examId,
+      'studentId': widget.studentId,
       'attemptStartTime': attemptStartTime?.toIso8601String(),
       'recordType': 'attempt',
       'answers': studentAnswers,
@@ -768,12 +783,16 @@ void _showWarningDialog(String message) {
       'questions': questions,
     });
 
+    debugPrint('   ✅ Saved to Hive key: $attemptId');
+
     // Save quick reference for resume check
     examBox.put('${widget.examId}_${widget.studentId}', {
       'attemptId': attemptId,
       'attemptStartTime': attemptStartTime?.toIso8601String(),
       'submitted': submitted,
     });
+    
+    debugPrint('   ✅ Saved quick reference to key: ${widget.examId}_${widget.studentId}');
   }
 
   void startTimer() {
@@ -974,6 +993,24 @@ void _showWarningDialog(String message) {
       
       debugPrint('✅ Exam submitted successfully - Score: $score');
 
+      // Fetch results to get correct answers
+      List<Map<String, dynamic>> questionsWithCorrectAnswers = questions;
+      try {
+        debugPrint('📡 Fetching results to get correct answers...');
+        final resultsData = await ApiService.fetchExamResults(attemptId: attemptId!);
+        
+        if (resultsData != null && !resultsData.containsKey('error')) {
+          if (resultsData['questions'] != null && resultsData['questions'] is List) {
+            questionsWithCorrectAnswers = List<Map<String, dynamic>>.from(resultsData['questions']);
+            debugPrint('✅ Got ${questionsWithCorrectAnswers.length} questions with correct answers');
+          }
+        } else {
+          debugPrint('⚠️ Could not fetch correct answers: ${resultsData?['error']}');
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error fetching correct answers: $e');
+      }
+
       bool synced = true; // Already synced via API
       await markExamCompleted(widget.examId, studentAnswers);
 
@@ -994,7 +1031,7 @@ void _showWarningDialog(String message) {
         'synced': synced,
         'score': score,
         'completedAt': DateTime.now().toIso8601String(),
-        'questions': questions,
+        'questions': questionsWithCorrectAnswers,
         'recordType': 'attempt',
       });
 
@@ -1009,7 +1046,7 @@ void _showWarningDialog(String message) {
         'allowReview': existingMeta['allowReview'] ?? false,
         'score': score,
         'studentAnswers': studentAnswers,
-        'questions': questions,
+        'questions': questionsWithCorrectAnswers,
         'resultsReleased': true,
         'synced': synced,
         'recordType': 'exam',

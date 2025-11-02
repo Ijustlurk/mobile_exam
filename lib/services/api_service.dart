@@ -10,7 +10,7 @@ class ApiService {
   //   - iOS Simulator: use 'http://localhost:8000/api'
   //   - Physical Device: use your computer's IP address, e.g., 'http://192.168.1.100:8000/api'
   // For production: use 'https://your-domain.com/api'
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  static const String baseUrl = 'https://evelia-unulcerated-keiko.ngrok-free.dev/api';
   
   // Timeout duration for API calls
   static const Duration timeout = Duration(seconds: 10);
@@ -38,6 +38,7 @@ class ApiService {
     final headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',  // Important for Laravel API
+      'ngrok-skip-browser-warning': 'true',  // Bypass ngrok browser warning
     };
     
     if (includeAuth && _authToken != null) {
@@ -577,25 +578,40 @@ class ApiService {
     try {
       final url = Uri.parse('$baseUrl/exam-attempts/$attemptId/results');
       
+      debugPrint('🌐 GET $url');
+      debugPrint('   Attempt ID: $attemptId');
+      
       final response = await http.get(
         url,
         headers: _getHeaders(),
       ).timeout(timeout);
 
+      debugPrint('📥 Response status: ${response.statusCode}');
+      debugPrint('   Content-Type: ${response.headers['content-type']}');
+      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         debugPrint('✅ Fetched results for attempt: $attemptId');
+        debugPrint('   Questions: ${data['questions']?.length ?? 0}');
+        debugPrint('   Answers: ${data['answers']?.length ?? 0}');
         return data;
       } else if (response.statusCode == 400) {
         final error = jsonDecode(response.body);
         debugPrint('❌ ${error['message']}');
         return {'error': error['message']};
       } else if (response.statusCode == 403 || response.statusCode == 404) {
-        final error = jsonDecode(response.body);
-        debugPrint('❌ ${error['message']}');
-        return {'error': error['message']};
+        try {
+          final error = jsonDecode(response.body);
+          debugPrint('❌ ${error['message']}');
+          return {'error': error['message']};
+        } catch (e) {
+          debugPrint('❌ Error ${response.statusCode} - Response is not JSON');
+          debugPrint('   Response body (first 200 chars): ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}');
+          return {'error': 'HTTP ${response.statusCode}'};
+        }
       } else {
         debugPrint('❌ Failed to fetch results: ${response.statusCode}');
+        debugPrint('   Response body (first 200 chars): ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}');
         return null;
       }
     } catch (e) {

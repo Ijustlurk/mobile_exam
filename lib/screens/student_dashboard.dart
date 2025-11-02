@@ -358,6 +358,45 @@ class _StudentDashboardState extends State<StudentDashboard>
         ),
       ),
       actions: [
+        // Clear cache button (for debugging)
+        IconButton(
+          icon: const Icon(Icons.delete_outline),
+          tooltip: 'Clear Cache',
+          onPressed: () async {
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Clear Cache?'),
+                content: const Text('This will delete all cached exam data. You\'ll need to retake exams.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Clear', style: TextStyle(color: Colors.red)),
+                  ),
+                ],
+              ),
+            );
+
+            if (confirm == true) {
+              await examBox.clear();
+              debugPrint('🗑️ Hive cache cleared!');
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("🗑️ Cache cleared!"),
+                    backgroundColor: Colors.orange,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+                setState(() {});
+              }
+            }
+          },
+        ),
         if (_isManualSyncing)
           const Padding(
             padding: EdgeInsets.only(right: 16),
