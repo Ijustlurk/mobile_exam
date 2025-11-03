@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:flutter_windowmanager/flutter_windowmanager.dart';
+// import 'package:flutter_windowmanager/flutter_windowmanager.dart';
 import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
 import 'student_dashboard.dart';
@@ -215,7 +215,7 @@ class _ExamScreenState extends State<ExamScreen> with WidgetsBindingObserver {
 
   Future<void> _secureExamEnvironment() async {
     try {
-      await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
+      // await FlutterWindowManager.addFlags(FlutterWindowManager.FLAG_SECURE);
       await WakelockPlus.enable();
       await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     } catch (e) {
