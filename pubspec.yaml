@@ -34,9 +34,9 @@ dependencies:
   flutter:
     sdk: flutter
   wakelock_plus: ^1.1.2
-  flutter_windowmanager:
-    git:
-      url: https://github.com/adaptant-labs/flutter_windowmanager.git
+  # flutter_windowmanager:
+  #   git:
+  #     url: https://github.com/adaptant-labs/flutter_windowmanager.git
   connectivity_plus: ^6.0.2
   firebase_core: ^2.30.0
   cloud_firestore: ^4.15.3

@@ -224,15 +224,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_windowmanager:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "17810c502e067c2811c2e180950ab2a59df5d2f8"
-      url: "https://github.com/adaptant-labs/flutter_windowmanager.git"
-    source: git
-    version: "0.2.0"
   google_fonts:
     dependency: "direct main"
     description:
